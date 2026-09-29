@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Text, View, TouchableOpacity, StyleSheet } from 'react-native';
 
-export default function App() {
+export default function Page() {
   const [serverStatus, setServerStatus] = useState('Checking server...');
 
   useEffect(() => {
-    // Test connection to your local Express backend
     fetch('http://localhost:5000/api/health')
       .then(res => res.json())
       .then(data => setServerStatus(data.message))
@@ -16,7 +15,7 @@ export default function App() {
     <View style={styles.container}>
       <View style={styles.card}>
         <Text style={styles.title}>JS AI Playground</Text>
-        <Text style={styles.subtitle}>React Native (Web Preview)</Text>
+        <Text style={styles.subtitle}>React Native (Expo Router)</Text>
 
         <View style={styles.statusBox}>
           <Text style={styles.statusLabel}>Backend Connection</Text>
