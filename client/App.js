@@ -9,21 +9,44 @@ export default function App() {
   const [loading, setLoading] = useState(false);
   const [statusText, setStatusText] = useState('');
 
-  // Pick an image from the device/browser
+  // Pick an image from the device/browser and extract base64
   const pickImage = async () => {
     let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      mediaTypes: ['images'],
       allowsEditing: true,
       quality: 1,
+      base64: true, // Tell Expo to return the raw image data
     });
 
     if (!result.canceled) {
-      setImageUri(result.assets[0].uri);
+      const asset = result.assets[0];
+      
+      // Construct a base64 data URI that Web Workers can universally read
+      // Fallback to the standard URI if base64 somehow fails
+      const imageDataUri = asset.base64 
+        ? `data:${asset.mimeType || 'image/jpeg'};base64,${asset.base64}` 
+        : asset.uri;
+
+      setImageUri(imageDataUri);
       setOcrResult('');
     }
   };
 
-  // Run Tesseract.js client-side OCR
+  // Strips out purely symbolic lines and graphical OCR hallucinations
+  const cleanOcrOutput = (rawText) => {
+    return rawText
+      .split('\n')
+      .map(line => line.trim())
+      .filter(line => {
+        // Count actual alphanumeric characters
+        const alphanumerics = line.match(/[a-zA-Z0-9]/g) || [];
+        // Keep the line only if it has at least 3 readable characters 
+        // AND isn't made up mostly of random symbols (like "Ee ————" or ": [")
+        return alphanumerics.length >= 3 && (alphanumerics.length / line.length) > 0.4;
+      })
+      .join('\n');
+  };
+
   const runOCR = async () => {
     if (!imageUri) return;
 
@@ -31,16 +54,24 @@ export default function App() {
       setLoading(true);
       setStatusText('Initializing Tesseract worker...');
       
-      // Create a Tesseract worker for English
       const worker = await createWorker('eng');
 
       setStatusText('Recognizing text...');
-      const { data: { text } } = await worker.recognize(imageUri);
+      const result = await worker.recognize(imageUri);
 
-      setOcrResult(text || 'No text detected.');
+      const cleanedText = cleanOcrOutput(result.data.text);
+
+      // Log the entire raw output object to the console
+      console.log("RAW TEXT STRING START:");
+      console.log(result.data.text);
+      console.log("RAW TEXT STRING END");
+
+      // Bypass Tesseract's flawed confidence scores and filter the raw text directly
+      setOcrResult(cleanedText || 'No readable text detected');
+
       await worker.terminate();
     } catch (error) {
-      console.error(error);
+      console.error("OCR ERROR:", error);
       setOcrResult('Error running OCR: ' + error.message);
     } finally {
       setLoading(false);
@@ -62,7 +93,7 @@ export default function App() {
         {/* Image Preview */}
         {imageUri && (
           <View style={styles.previewContainer}>
-            <Image source={{ uri: imageUri }} style={styles.imagePreview} />
+            <Image source={{ uri: imageUri }} resizeMode="contain" style={styles.imagePreview} />
             <TouchableOpacity style={[styles.button, styles.ocrButton]} onPress={runOCR} disabled={loading}>
               <Text style={styles.buttonText}>Extract Text</Text>
             </TouchableOpacity>
@@ -141,7 +172,6 @@ const styles = StyleSheet.create({
     width: '100%',
     height: 220,
     borderRadius: 8,
-    resizeMode: 'contain',
     backgroundColor: '#0f172a',
   },
   loadingContainer: {
