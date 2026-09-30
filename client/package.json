@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "main": "index.js",
   "dependencies": {
+    "@huggingface/transformers": "^4.3.0",
     "expo": "~57.0.26",
     "expo-image-picker": "~57.0.20",
     "expo-status-bar": "~57.0.1",
