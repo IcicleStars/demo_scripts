@@ -4,7 +4,10 @@
   "main": "index.js",
   "dependencies": {
     "@huggingface/transformers": "^4.3.0",
+    "@react-native-ml-kit/text-recognition": "^2.0.0",
+    "@react-native-voice/voice": "^3.2.4",
     "expo": "~57.0.26",
+    "expo-file-system": "~57.0.7",
     "expo-image-picker": "~57.0.20",
     "expo-status-bar": "~57.0.1",
     "nativewind": "^4.2.7",
@@ -19,8 +22,8 @@
   },
   "scripts": {
     "start": "expo start",
-    "android": "expo start --android",
-    "ios": "expo start --ios",
+    "android": "expo run:android",
+    "ios": "expo run:ios",
     "web": "expo start --web"
   },
   "private": true,

@@ -7,18 +7,36 @@
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.anonymous.client",
+      "infoPlist": {
+        "NSSpeechRecognitionUsageDescription": "Allow this app to transcribe your speech into text.",
+        "NSMicrophoneUsageDescription": "Allow this app to access the microphone for voice notes."
+      }
     },
     "android": {
+      "package": "com.anonymous.client",
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/android-icon-foreground.png",
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
-      }
+      },
+      "permissions": [
+        "android.permission.RECORD_AUDIO"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "plugins": [
+      [
+        "@react-native-voice/voice",
+        {
+          "microphonePermission": "Allow this app to access the microphone for voice notes.",
+          "speechRecognitionPermission": "Allow this app to transcribe your speech into text."
+        }
+      ]
+    ]
   }
 }
